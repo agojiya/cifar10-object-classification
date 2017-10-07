@@ -14,7 +14,6 @@ def unpickle(file):
         dictionary = pickle.load(fo, encoding='bytes')
     return dictionary
 
-
 batches_meta_unpickled = unpickle(BASE_DIR + '/' + FILES[0])
 NUM_CASES_PER_BATCH = batches_meta_unpickled[b'num_cases_per_batch']
 LABEL_NAMES = [s.decode('UTF-8') for s in
@@ -45,21 +44,25 @@ def get_data(train_set=True):
         output['labels'] += unpickled_file[b'labels']
 
         current_images = unpickled_file[b'data']
+        # Reshape using fortran-like indexing (order='F') to ensure that the
+        # values at each index are correct (default order='C' is not how the
+        # data was stored in the dataset)
         current_images_reshaped = current_images.reshape((NUM_CASES_PER_BATCH,
                                                           IMAGE_WIDTH,
                                                           IMAGE_HEIGHT, 3),
                                                          order='F')
         output['images'] = np.append(output['images'],
                                      current_images_reshaped, axis=0)
-    output['images'] = np.delete(output['images'], np.s_[:10000], 0)
+    # Remove the first NUM_CASES_PER_BATCH (10000) empty entries
+    output['images'] = np.delete(output['images'],
+                                 np.s_[:NUM_CASES_PER_BATCH],
+                                 0)
 
     # Images are sideways (maybe a byproduct of fortran-like order in the
     # reshape?)
     output['images'] = np.rot90(output['images'], k=-1, axes=(1, 2))
     return output
 
-
-# Todo: Preview images to make sure they're loading correctly
 if __name__ == "__main__":
     data = get_data(train_set=True)
 
