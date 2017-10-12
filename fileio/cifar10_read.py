@@ -36,12 +36,16 @@ def get_data(train_set=True):
     unpickled_target_files = [unpickle(BASE_DIR + '/' + file) for file in
                               (FILES[1:6] if train_set else FILES[6:])]
 
-    output = {'labels': [],
+    output = {'labels': np.empty(shape=(NUM_CASES_PER_BATCH,
+                                        len(LABEL_NAMES))),
               'images': np.empty(
                   shape=(NUM_CASES_PER_BATCH, IMAGE_WIDTH, IMAGE_HEIGHT, 3),
                   dtype=np.uint8)}
     for unpickled_file in unpickled_target_files:
-        output['labels'] += unpickled_file[b'labels']
+        labels = unpickled_file[b'labels']
+        one_hot_label = np.zeros(shape=(NUM_CASES_PER_BATCH, len(LABEL_NAMES)))
+        one_hot_label[np.arange(NUM_CASES_PER_BATCH), labels] = 1
+        output['labels'] = np.append(output['labels'], one_hot_label, axis=0)
 
         current_images = unpickled_file[b'data']
         # Reshape using fortran-like indexing (order='F') to ensure that the
@@ -54,14 +58,16 @@ def get_data(train_set=True):
         output['images'] = np.append(output['images'],
                                      current_images_reshaped, axis=0)
     # Remove the first NUM_CASES_PER_BATCH (10000) empty entries
+    output['labels'] = np.delete(output['labels'],
+                                 np.s_[:NUM_CASES_PER_BATCH], 0)
     output['images'] = np.delete(output['images'],
-                                 np.s_[:NUM_CASES_PER_BATCH],
-                                 0)
+                                 np.s_[:NUM_CASES_PER_BATCH], 0)
 
     # Images are sideways (maybe a byproduct of fortran-like order in the
     # reshape?)
     output['images'] = np.rot90(output['images'], k=-1, axes=(1, 2))
     return output
+
 
 if __name__ == "__main__":
     data = get_data(train_set=True)
@@ -71,7 +77,7 @@ if __name__ == "__main__":
 
     while True:
         index = randrange(0, stop=len(data['labels']))
-        print(LABEL_NAMES[data['labels'][index]])
+        print(LABEL_NAMES[np.argmax(data['labels'][index])])
 
         bigger_image = np.repeat(np.repeat(data['images'][index], 4, axis=0),
                                  4, axis=1)
