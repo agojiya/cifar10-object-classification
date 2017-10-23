@@ -10,8 +10,7 @@ def create_conv2d_model(data_in):
     and the output layer. Accepts the entire image with all three channels.
 
     TODO:
-        conv2d layers,
-        fully_connected layers at the end
+        innovate
 
     :param data_in: A Tensor of shape [?, 32, 32, 3] representing the image at
         a single channel

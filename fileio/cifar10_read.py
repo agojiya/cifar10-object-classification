@@ -24,9 +24,9 @@ IMAGE_WIDTH = IMAGE_HEIGHT = 32
 def get_data(train_set=True):
     """
     Provides a dictionary containing both the images (RGB) and their respective
-    labels. Elements in 'images' are shaped: (<num_images>, 3, 1024) where 3
-    represents the color channels and 1024 represents intensity values for each
-    pixel in the respective channel (32 * 32 = 1024).
+    labels. Elements in 'images' are shaped: (<num_images>, IMAGE_WIDTH,
+    IMAGE_HEIGHT, 3) where 3 represents the color channels and 1024 represents
+    intensity values for each pixel in the respective channel (32 * 32 = 1024).
 
     :param train_set: Boolean indicating whether the training data should be
         loaded (True) or the test data (False).

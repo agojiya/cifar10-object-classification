@@ -13,7 +13,7 @@ if not path.isdir(SAVE_DIR):
     makedirs(SAVE_DIR)
 
 N_EPOCHS = 10
-BATCH_SIZE = 512
+BATCH_SIZE = 1024
 
 in_image = tf.placeholder(dtype=tf.float32,
                           shape=[None, cifar10_read.IMAGE_WIDTH,
@@ -32,10 +32,6 @@ train_data = cifar10_read.get_data('train')
 train_images, train_labels = train_data['images'], train_data['labels']
 num_examples = len(train_images)
 
-zipped_data = list(zip(train_images, train_labels))
-shuffle(zipped_data)
-train_images, train_labels = zip(*zipped_data)
-
 saver = tf.train.Saver(max_to_keep=None)
 with tf.Session() as session:
     session.run(tf.global_variables_initializer())
@@ -49,6 +45,11 @@ with tf.Session() as session:
 
     for epoch in range(N_EPOCHS):
         epoch_loss = 0
+
+        zipped_data = list(zip(train_images, train_labels))
+        shuffle(zipped_data)
+        train_images, train_labels = zip(*zipped_data)
+
         for i in range(int(num_examples / BATCH_SIZE) + 1):
             n = min(BATCH_SIZE, num_examples - BATCH_SIZE * i)
             images = np.asarray(
